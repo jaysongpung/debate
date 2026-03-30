@@ -1,0 +1,142 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
+import { useNow } from "@/lib/debug-time";
+import { getDebates, getVotes, getComments } from "@/lib/firestore";
+import { getDebateStatus } from "@/lib/status";
+import Nav from "@/components/Nav";
+import DebateListItem from "@/components/DebateListItem";
+import type { Debate } from "@shared/types";
+
+export default function HomePage() {
+  const { user, loading } = useAuth();
+  const { now } = useNow();
+  const router = useRouter();
+  const [debates, setDebates] = useState<Debate[]>([]);
+  const [votedDebates, setVotedDebates] = useState<Record<string, string>>({});
+  const [commentedDebates, setCommentedDebates] = useState<Set<string>>(new Set());
+  const [bestInsightsMap, setBestInsightsMap] = useState<Record<string, string[]>>({});
+  const [persuadedCountMap, setPersuadedCountMap] = useState<Record<string, number>>({});
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    async function fetchData() {
+      const allDebates = await getDebates();
+      const withStatus = allDebates.map((d) => ({
+        ...d,
+        status: getDebateStatus(d.startTime, now()),
+      }));
+      const visible = withStatus.filter((d) => d.status !== "pending");
+      setDebates(visible.reverse());
+
+      const voted: Record<string, string> = {};
+      const commented = new Set<string>();
+      const bests: Record<string, string[]> = {};
+      const persuaded: Record<string, number> = {};
+
+      for (const d of visible) {
+        const votes = await getVotes(d.id);
+        if (votes[user!.nickname]) {
+          voted[d.id] = votes[user!.nickname].side;
+        }
+
+        if (d.status === "reviewing" || d.status === "closed") {
+          const comments = await getComments(d.id);
+          if (comments[user!.nickname]) {
+            commented.add(d.id);
+          }
+          const bestNicknames = Object.entries(comments)
+            .filter(([, c]) => c.isBestInsight)
+            .map(([nickname]) => nickname);
+          if (bestNicknames.length > 0) {
+            bests[d.id] = bestNicknames;
+          }
+          persuaded[d.id] = Object.values(comments).filter(
+            (c) => c.role === "participant" && c.persuaded === true
+          ).length;
+        }
+      }
+      setVotedDebates(voted);
+      setCommentedDebates(commented);
+      setBestInsightsMap(bests);
+      setPersuadedCountMap(persuaded);
+      setFetching(false);
+    }
+    fetchData();
+  }, [user, now]);
+
+  const handleDebateClick = (debate: Debate) => {
+    const isMyRole =
+      debate.agendaSetter === user?.nickname ||
+      debate.architect === user?.nickname;
+
+    if (debate.status === "active") {
+      if (!isMyRole && !votedDebates[debate.id]) {
+        router.push(`/debates/${debate.id}/vote`);
+        return;
+      }
+      if (debate.url) {
+        const url = new URL(debate.url);
+        url.searchParams.set("nickname", user!.nickname);
+        if (votedDebates[debate.id]) {
+          url.searchParams.set("side", votedDebates[debate.id]);
+        }
+        window.open(url.toString(), "_blank");
+      }
+      return;
+    }
+
+    if (debate.status === "reviewing") {
+      router.push(`/debates/${debate.id}/comment`);
+      return;
+    }
+
+    if (debate.status === "closed") {
+      router.push(`/debates/${debate.id}`);
+      return;
+    }
+  };
+
+  if (loading || !user) return null;
+
+  return (
+    <>
+      <Nav />
+      <main className="w-full max-w-4xl mx-auto px-4 py-6 flex-1">
+        <h1 className="text-xl font-bold mb-6">토론 목록</h1>
+        {fetching ? (
+          <p className="text-sm text-muted-foreground">불러오는 중...</p>
+        ) : debates.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            진행중이거나 완료된 토론이 없습니다.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {debates.map((debate) => (
+              <DebateListItem
+                key={debate.id}
+                debate={debate}
+                currentNickname={user.nickname}
+                hasVoted={!!votedDebates[debate.id]}
+                hasComment={commentedDebates.has(debate.id)}
+                bestInsights={bestInsightsMap[debate.id] ?? []}
+                persuadedCount={persuadedCountMap[debate.id] ?? 0}
+                onClick={() => handleDebateClick(debate)}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+    </>
+  );
+}
