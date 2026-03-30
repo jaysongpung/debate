@@ -11,8 +11,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "토론 플랫폼",
-  description: "미디어디자인 토론 플랫폼",
+  title: "Debate Lab",
+  description: "미디어디자인 Debate Lab",
 };
 
 export default function RootLayout({

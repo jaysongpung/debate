@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>토론</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <div id="message" class="message" style="display:none"></div>
@@ -36,22 +38,16 @@
         <h2>의견 제출</h2>
         <button id="close-modal-btn" class="modal-close">&times;</button>
       </div>
-      <textarea
-        id="opinion-input"
-        placeholder="이 주제에 대한 의견을 자유롭게 작성하세요..."
-        rows="8"
-      ></textarea>
+      <textarea id="opinion-input" placeholder="이 주제에 대한 의견을 자유롭게 작성하세요..." rows="8"></textarea>
       <div class="modal-footer">
         <button id="submit-btn" class="btn-primary">제출하기</button>
       </div>
     </div>
   </div>
 
-  <script
-    src="https://debate-md2-2603.web.app/debate-core.js"
-    data-architect-id="dan"
-  ></script>
+  <script src="https://debate-md2-2603.web.app/debate-core.js" data-architect-id="default"></script>
   <script src="app.js"></script>
 
 </body>
+
 </html>

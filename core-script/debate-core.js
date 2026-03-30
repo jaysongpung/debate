@@ -62,6 +62,10 @@
     if (!_architectId) {
       console.error("[DebateCore] data-architect-id가 설정되지 않았습니다.");
     }
+    if (_architectId === "default") {
+      console.error("[DebateCore] data-architect-id가 'default'입니다. 본인 닉네임으로 변경하세요.");
+      _architectId = null;
+    }
   }
 
   // ── 토론 상태 계산 ──
@@ -349,8 +353,94 @@
     }
   });
 
+  // ── 데모 모드 ──
+  // URL에 ?demo=true 를 붙이면 Firebase 없이 가짜 데이터로 동작
+  // 개발/테스트용. 자기 차례가 아닐 때도 UI를 확인할 수 있음
+  var _demoPayloads = {};
+
+  function isDemo() {
+    return new URLSearchParams(window.location.search).get("demo") === "true";
+  }
+
+  function initDemo() {
+    parseParams();
+    _nickname = _nickname || "테스트유저";
+    _side = _side || "pro";
+    _status = "active";
+    _isActive = true;
+
+    // 데모용 더미 의견 데이터
+    _demoPayloads = {
+      "더미유저A": {
+        opinions: [
+          { text: "이 주제에 대해 찬성합니다. 충분한 근거가 있다고 봅니다.", side: "pro", timestamp: Date.now() - 300000 },
+          { text: "추가로 말하자면, 이건 사회적 합의가 필요한 문제입니다.", side: "pro", timestamp: Date.now() - 100000 },
+        ]
+      },
+      "더미유저B": {
+        opinions: [
+          { text: "반대합니다. 현실적으로 실현 가능성이 낮습니다.", side: "con", timestamp: Date.now() - 200000 },
+        ]
+      },
+      "더미유저C": {
+        opinions: [
+          { text: "저도 반대 의견입니다. 부작용이 더 클 것으로 예상됩니다.", side: "con", timestamp: Date.now() - 150000 },
+        ]
+      },
+    };
+
+    _debateDoc = {
+      id: "demo-debate",
+      data: {
+        title: "[데모] 토론 주제 예시입니다",
+        architect: "demo",
+        agendaSetter: "demo",
+        startTime: { toMillis: function() { return Date.now() - 3600000; } },
+      },
+    };
+
+    window.DebateCore._schedule = [];
+
+    if (_readyCallback) {
+      _readyCallback({
+        nickname: _nickname,
+        side: _side,
+        role: "participant",
+        status: "active",
+        title: _debateDoc.data.title,
+        agendaSetter: _debateDoc.data.agendaSetter,
+        architect: _debateDoc.data.architect,
+        schedule: [],
+        savePayload: function(data) {
+          _demoPayloads[_nickname] = data;
+          localStorage.setItem("debate-demo-payloads", JSON.stringify(_demoPayloads));
+          console.log("[DebateCore 데모] 저장됨:", data);
+          return Promise.resolve();
+        },
+        loadPayloads: function() {
+          var stored = localStorage.getItem("debate-demo-payloads");
+          if (stored) {
+            try { Object.assign(_demoPayloads, JSON.parse(stored)); } catch(e) {}
+          }
+          console.log("[DebateCore 데모] 불러옴:", _demoPayloads);
+          return Promise.resolve(JSON.parse(JSON.stringify(_demoPayloads)));
+        },
+        onPayloadsChange: function(callback) {
+          callback(JSON.parse(JSON.stringify(_demoPayloads)));
+        },
+      });
+    }
+
+    console.log("[DebateCore] 🟡 데모 모드로 실행 중 — Firebase에 연결하지 않습니다");
+  }
+
   // ── 초기화 ──
   async function init() {
+    if (isDemo()) {
+      initDemo();
+      return;
+    }
+
     parseParams();
     getArchitectId();
 
