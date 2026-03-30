@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 유저 정보: 누구나 읽기, 쓰기 불가
+    match /users/{nickname} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 토론: 누구나 읽기, 쓰기도 허용 (관리자 캘린더 수정용, Cloud Functions 상태 전환용)
+    match /debates/{debateId} {
+      allow read: if true;
+      allow write: if true;
+
+      // 투표: 진행중일 때만 쓰기
+      match /votes/{nickname} {
+        allow read: if true;
+        allow create: if getStatus(debateId) == 'active';
+        allow update, delete: if false;
+      }
+
+      // 인사이트: 집계중일 때만 쓰기
+      match /comments/{nickname} {
+        allow read: if true;
+        allow create, update: if getStatus(debateId) == 'reviewing';
+        allow delete: if false;
+      }
+
+      // 세션 (heartbeat): 진행중일 때만 쓰기
+      match /sessions/{nickname} {
+        allow read: if true;
+        allow write: if getStatus(debateId) == 'active';
+      }
+
+      // 커스텀 페이로드: 진행중일 때만 쓰기
+      match /payloads/{nickname} {
+        allow read: if true;
+        allow write: if getStatus(debateId) == 'active';
+      }
+    }
+
+    // 서버 시간 동기화용
+    match /_meta/{doc} {
+      allow read, write: if true;
+    }
+
+    function getStatus(debateId) {
+      return get(/databases/$(database)/documents/debates/$(debateId)).data.status;
+    }
+  }
+}
