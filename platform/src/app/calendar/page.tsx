@@ -243,7 +243,8 @@ export default function CalendarPage() {
               <TableBody>
                 {debates.map((debate) => {
                   const d = debate.startTime;
-                  const dateStr = `${String(d.getFullYear()).slice(2)}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+                  const dateStr = `${String(d.getFullYear()).slice(2)}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} (${dayNames[d.getDay()]})`;
                   const isActive = debate.status === "active";
                   const isReviewing = debate.status === "reviewing";
                   const showStats =
