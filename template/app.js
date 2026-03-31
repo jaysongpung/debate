@@ -108,7 +108,7 @@ function renderOpinions() {
   list.innerHTML = allOpinions.map(function (o) {
     return (
       '<div class="opinion-card">' +
-      '<div class="opinion-nickname">' + escapeHtml(o.nickname) + '</div>' +
+      '<div class="opinion-nickname">' + escapeHtml(o.nickname) + '<span class="opinion-side">' + (o.side === "pro" ? "찬성" : "반대") + '</span></div>' +
       '<p class="opinion-text">' + escapeHtml(o.text) + '</p>' +
       '</div>'
     );

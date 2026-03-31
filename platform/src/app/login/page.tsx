@@ -21,7 +21,7 @@ export default function LoginPage() {
     setError("");
     setSubmitting(true);
 
-    const success = await login(nickname.trim(), studentId.trim());
+    const success = await login(nickname.trim().toLowerCase(), studentId.trim());
     if (success) {
       router.push("/");
     } else {

@@ -49,7 +49,7 @@
   // ── URL 파라미터 파싱 ──
   function parseParams() {
     const params = new URLSearchParams(window.location.search);
-    _nickname = params.get("nickname") || null;
+    _nickname = params.get("nickname") ? params.get("nickname").toLowerCase() : null;
     _side = params.get("side") || null;
   }
 
@@ -57,7 +57,7 @@
   function getArchitectId() {
     const scriptTag = document.querySelector("script[data-architect-id]");
     if (scriptTag) {
-      _architectId = scriptTag.getAttribute("data-architect-id");
+      _architectId = scriptTag.getAttribute("data-architect-id").toLowerCase();
     }
     if (!_architectId) {
       console.error("[DebateCore] data-architect-id가 설정되지 않았습니다.");
@@ -371,18 +371,18 @@
 
     // 데모용 더미 의견 데이터
     _demoPayloads = {
-      "더미유저A": {
+      "alice": {
         opinions: [
           { text: "이 주제에 대해 찬성합니다. 충분한 근거가 있다고 봅니다.", side: "pro", timestamp: Date.now() - 300000 },
           { text: "추가로 말하자면, 이건 사회적 합의가 필요한 문제입니다.", side: "pro", timestamp: Date.now() - 100000 },
         ]
       },
-      "더미유저B": {
+      "nemo": {
         opinions: [
           { text: "반대합니다. 현실적으로 실현 가능성이 낮습니다.", side: "con", timestamp: Date.now() - 200000 },
         ]
       },
-      "더미유저C": {
+      "kyo": {
         opinions: [
           { text: "저도 반대 의견입니다. 부작용이 더 클 것으로 예상됩니다.", side: "con", timestamp: Date.now() - 150000 },
         ]

@@ -108,9 +108,18 @@ main {
 }
 
 .opinion-nickname {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-weight: 600;
   font-size: 0.85rem;
   margin-bottom: 0.4rem;
+}
+
+.opinion-side {
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: #999;
 }
 
 .opinion-text {
