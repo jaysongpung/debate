@@ -63,9 +63,7 @@ export default function DebateListItem({
         <div
           className={`relative border bg-card text-card-foreground ${isActive
             ? "border-transparent"
-            : isMyRole
-              ? "border-primary"
-              : "border-border"
+            : "border-border"
             }`}
           style={{ borderRadius: "12px" }}
         >
