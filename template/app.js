@@ -15,15 +15,12 @@ window.DebateCore.onReady(function (info) {
     return;
   }
 
-  if (info.status !== "active") {
-    var statusText = {
-      pending: "토론이 아직 시작되지 않았습니다.",
-      reviewing: "토론이 종료되었습니다. 집계 중입니다.",
-      closed: "토론이 종료되었습니다.",
-    };
-    showMessage(statusText[info.status] || "토론을 찾을 수 없습니다.");
+  if (info.status === "pending") {
+    showMessage("토론이 아직 시작되지 않았습니다.");
     return;
   }
+
+  var isReadonly = info.status !== "active";
 
   document.getElementById("app").style.display = "block";
   document.getElementById("debate-title").textContent = info.title || "(제목 없음)";
@@ -52,7 +49,7 @@ window.DebateCore.onReady(function (info) {
 
   loadAllOpinions();
 
-  if (info.role !== "participant") return;
+  if (info.role !== "participant" || isReadonly) return;
 
   // 모달
   var openModalBtn = document.getElementById("open-modal-btn");

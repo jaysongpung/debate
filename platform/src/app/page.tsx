@@ -75,6 +75,16 @@ export default function HomePage() {
     fetchData();
   }, [user, now]);
 
+  const openDebateSite = (debate: Debate) => {
+    if (!debate.url) return;
+    const url = new URL(debate.url);
+    url.searchParams.set("nickname", user!.nickname);
+    if (votedDebates[debate.id]) {
+      url.searchParams.set("side", votedDebates[debate.id]);
+    }
+    window.open(url.toString(), "_blank");
+  };
+
   const handleDebateClick = (debate: Debate) => {
     const isMyRole =
       debate.agendaSetter === user?.nickname ||
@@ -85,24 +95,13 @@ export default function HomePage() {
         router.push(`/debates/${debate.id}/vote`);
         return;
       }
-      if (debate.url) {
-        const url = new URL(debate.url);
-        url.searchParams.set("nickname", user!.nickname);
-        if (votedDebates[debate.id]) {
-          url.searchParams.set("side", votedDebates[debate.id]);
-        }
-        window.open(url.toString(), "_blank");
-      }
+      openDebateSite(debate);
       return;
     }
 
-    if (debate.status === "reviewing") {
-      router.push(`/debates/${debate.id}/comment`);
-      return;
-    }
-
-    if (debate.status === "closed") {
-      router.push(`/debates/${debate.id}`);
+    // 집계중/종료: 카드 본문 클릭 → 토론 사이트 열기
+    if (debate.status === "reviewing" || debate.status === "closed") {
+      openDebateSite(debate);
       return;
     }
   };
@@ -132,6 +131,13 @@ export default function HomePage() {
                 bestInsights={bestInsightsMap[debate.id] ?? []}
                 persuadedCount={persuadedCountMap[debate.id] ?? 0}
                 onClick={() => handleDebateClick(debate)}
+                onButtonClick={() => {
+                  if (debate.status === "reviewing") {
+                    router.push(`/debates/${debate.id}/comment`);
+                  } else if (debate.status === "closed") {
+                    router.push(`/debates/${debate.id}`);
+                  }
+                }}
               />
             ))}
           </div>

@@ -16,6 +16,7 @@ interface Props {
   bestInsights: string[];
   persuadedCount: number;
   onClick: () => void;
+  onButtonClick?: () => void;
 }
 
 export default function DebateListItem({
@@ -26,6 +27,7 @@ export default function DebateListItem({
   bestInsights,
   persuadedCount,
   onClick,
+  onButtonClick,
 }: Props) {
   const { status } = debate;
   const isMyRole =
@@ -144,6 +146,7 @@ export default function DebateListItem({
                     size="lg"
                     variant="outline"
                     className={`${BTN_WIDTH} cursor-pointer`}
+                    onClick={(e) => { e.stopPropagation(); onButtonClick?.(); }}
                   >
                     인사이트 작성
                   </Button>
@@ -156,6 +159,7 @@ export default function DebateListItem({
                     size="lg"
                     variant="outline"
                     className={`${BTN_WIDTH} cursor-pointer`}
+                    onClick={(e) => { e.stopPropagation(); onButtonClick?.(); }}
                   >
                     인사이트 보기
                   </Button>
