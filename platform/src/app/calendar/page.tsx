@@ -250,6 +250,29 @@ export default function CalendarPage() {
                     debate.status === "reviewing" ||
                     debate.status === "closed";
 
+                  // 제출 마감: startTime 전날 오후 6시 (= startTime - 24h)
+                  const deadlineMs = d.getTime() - 24 * 60 * 60 * 1000;
+                  const nowMs = now().getTime();
+                  const msLeft = deadlineMs - nowMs;
+                  const hoursLeft = msLeft / (1000 * 60 * 60);
+                  const daysLeft = msLeft / (1000 * 60 * 60 * 24);
+                  const hasSubmitted = !!(debate.title && debate.url);
+                  const showDeadline = daysLeft <= 3 && msLeft > 0;
+                  const isMyDebate =
+                    debate.agendaSetter === user.nickname ||
+                    debate.architect === user.nickname;
+
+                  let deadlineText = "";
+                  if (showDeadline) {
+                    if (hasSubmitted) {
+                      deadlineText = "제출완료";
+                    } else if (hoursLeft < 1) {
+                      deadlineText = `제출 ${Math.max(0, Math.round(hoursLeft * 60))}분 남음`;
+                    } else {
+                      deadlineText = `제출 ${Math.round(hoursLeft)}시간 남음`;
+                    }
+                  }
+
                   return (
                     <TableRow
                       key={debate.id}
@@ -319,10 +342,19 @@ export default function CalendarPage() {
                                   isAdmin && !value
                                     ? "text-muted-foreground italic"
                                     : ""
+                                } ${
+                                  (field === "agendaSetter" || field === "architect") && value === user.nickname
+                                    ? "text-orange-500 font-semibold"
+                                    : ""
                                 }`}
                               >
                                 {value ||
                                   (isAdmin ? `(${fieldLabels[field]})` : "-")}
+                                {(field === "agendaSetter" || field === "architect") && value === user.nickname && showDeadline && (
+                                  <span className={`ml-1.5 text-[11px] font-normal ${hasSubmitted ? "text-green-600" : "text-orange-400"}`}>
+                                    {deadlineText}
+                                  </span>
+                                )}
                               </span>
                             )}
                           </TableCell>
