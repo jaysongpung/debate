@@ -288,16 +288,6 @@ export default function CalendarPage() {
                     >
                       <TableCell className="whitespace-nowrap font-medium">
                         {dateStr}
-                        {isActive && (
-                          <span className="ml-1 text-xs text-blue-600 font-semibold">
-                            오늘
-                          </span>
-                        )}
-                        {isReviewing && (
-                          <span className="ml-1 text-xs text-yellow-600 font-semibold">
-                            어제
-                          </span>
-                        )}
                       </TableCell>
                       <TableCell>
                         <Badge
