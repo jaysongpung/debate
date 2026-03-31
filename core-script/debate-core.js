@@ -31,6 +31,7 @@
   let _architectId = null;
   let _nickname = null;
   let _side = null;
+  let _debateIdParam = null;
   let _debateDoc = null;
   let _status = null;
   let _isActive = false;
@@ -51,6 +52,7 @@
     const params = new URLSearchParams(window.location.search);
     _nickname = params.get("nickname") ? params.get("nickname").toLowerCase() : null;
     _side = params.get("side") || null;
+    _debateIdParam = params.get("debateId") || null;
   }
 
   // ── architect ID 읽기 ──
@@ -99,6 +101,17 @@
       s.onerror = reject;
       document.head.appendChild(s);
     });
+  }
+
+  // ── 토론 문서 직접 로드 (debateId 파라미터) ──
+  async function loadDebateById(debateId) {
+    var docRef = _db.collection("debates").doc(debateId);
+    var doc = await docRef.get();
+    if (!doc.exists) {
+      console.error("[DebateCore] debateId '" + debateId + "'에 해당하는 토론을 찾을 수 없습니다.");
+      return null;
+    }
+    return { id: doc.id, data: doc.data() };
   }
 
   // ── 토론 문서 찾기 (architectId로 조회) ──
@@ -444,12 +457,14 @@
     parseParams();
     getArchitectId();
 
-    if (!_architectId) return;
+    if (!_architectId && !_debateIdParam) return;
 
     try {
       await loadFirebase();
 
-      var debate = await findDebate();
+      var debate = _debateIdParam
+        ? await loadDebateById(_debateIdParam)
+        : await findDebate();
       if (!debate) return;
 
       _debateDoc = debate;

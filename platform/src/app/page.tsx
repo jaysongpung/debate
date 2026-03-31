@@ -79,6 +79,7 @@ export default function HomePage() {
     if (!debate.url) return;
     const url = new URL(debate.url);
     url.searchParams.set("nickname", user!.nickname);
+    url.searchParams.set("debateId", debate.id);
     if (votedDebates[debate.id]) {
       url.searchParams.set("side", votedDebates[debate.id]);
     }
