@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useNow } from "@/lib/debug-time";
-import { getDebates, getVotes, getComments, updateDebate, createDebate, deleteDebate } from "@/lib/firestore";
+import { getDebates, getVotes, getComments, getSessions, updateDebate, createDebate, deleteDebate } from "@/lib/firestore";
 import { getDebateStatus, STATUS_LABELS, STATUS_COLORS } from "@/lib/status";
 import Nav from "@/components/Nav";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,12 @@ export default function CalendarPage() {
             proCount: voteEntries.filter((v) => v.side === "pro").length,
             conCount: voteEntries.filter((v) => v.side === "con").length,
           };
+
+          const sessions = await getSessions(d.id);
+          const durations = Object.values(sessions).map((s) => s.totalDuration).filter((t) => t > 0);
+          if (durations.length > 0) {
+            d.stats = { ...d.stats, avgDuration: Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) };
+          }
         }
         if (d.status === "reviewing" || d.status === "closed") {
           const comments = await getComments(d.id);

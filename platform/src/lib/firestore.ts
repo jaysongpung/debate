@@ -151,6 +151,19 @@ export async function getComments(
   return comments;
 }
 
+export async function getSessions(
+  debateId: string
+): Promise<Record<string, { totalDuration: number }>> {
+  const snapshot = await getDocs(
+    collection(db, "debates", debateId, "sessions")
+  );
+  const sessions: Record<string, { totalDuration: number }> = {};
+  snapshot.docs.forEach((d) => {
+    sessions[d.id] = { totalDuration: (d.data().totalDuration as number) ?? 0 };
+  });
+  return sessions;
+}
+
 export async function submitComment(
   debateId: string,
   nickname: string,

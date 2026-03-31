@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useNow } from "@/lib/debug-time";
-import { getDebates, getVotes, getComments } from "@/lib/firestore";
+import { getDebates, getVotes, getComments, getSessions } from "@/lib/firestore";
 import { getDebateStatus } from "@/lib/status";
 import Nav from "@/components/Nav";
 import DebateListItem from "@/components/DebateListItem";
@@ -56,6 +56,13 @@ export default function HomePage() {
         const conCount = voteEntries.filter((v) => v.side === "con").length;
         if (proCount > 0 || conCount > 0) {
           d.stats = { ...d.stats, proCount, conCount };
+        }
+
+        // 세션 데이터에서 평균 체류시간 집계
+        const sessions = await getSessions(d.id);
+        const durations = Object.values(sessions).map((s) => s.totalDuration).filter((t) => t > 0);
+        if (durations.length > 0) {
+          d.stats = { ...d.stats, avgDuration: Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) };
         }
 
         if (d.status === "reviewing" || d.status === "closed") {
