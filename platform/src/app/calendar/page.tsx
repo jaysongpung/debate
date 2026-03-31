@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useNow } from "@/lib/debug-time";
-import { getDebates, getComments, updateDebate, createDebate, deleteDebate } from "@/lib/firestore";
+import { getDebates, getVotes, getComments, updateDebate, createDebate, deleteDebate } from "@/lib/firestore";
 import { getDebateStatus, STATUS_LABELS, STATUS_COLORS } from "@/lib/status";
 import Nav from "@/components/Nav";
 import { Button } from "@/components/ui/button";
@@ -48,17 +48,26 @@ export default function CalendarPage() {
         ...d,
         status: getDebateStatus(d.startTime, now()),
       }));
-      setDebates(withStatus);
-
       const pMap: Record<string, number> = {};
       for (const d of withStatus) {
-        if (d.status === "closed") {
+        if (d.status !== "pending") {
+          const votes = await getVotes(d.id);
+          const voteEntries = Object.values(votes);
+          d.stats = {
+            ...d.stats,
+            proCount: voteEntries.filter((v) => v.side === "pro").length,
+            conCount: voteEntries.filter((v) => v.side === "con").length,
+          };
+        }
+        if (d.status === "reviewing" || d.status === "closed") {
           const comments = await getComments(d.id);
+          d.stats = { ...d.stats, commentCount: Object.keys(comments).length };
           pMap[d.id] = Object.values(comments).filter(
             (c) => c.role === "participant" && c.persuaded === true
           ).length;
         }
       }
+      setDebates(withStatus);
       setPersuadedMap(pMap);
       setFetching(false);
     }

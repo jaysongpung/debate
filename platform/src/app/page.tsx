@@ -50,6 +50,14 @@ export default function HomePage() {
           voted[d.id] = votes[user!.nickname].side;
         }
 
+        // 투표 데이터에서 실시간 찬/반 집계
+        const voteEntries = Object.values(votes);
+        const proCount = voteEntries.filter((v) => v.side === "pro").length;
+        const conCount = voteEntries.filter((v) => v.side === "con").length;
+        if (proCount > 0 || conCount > 0) {
+          d.stats = { ...d.stats, proCount, conCount };
+        }
+
         if (d.status === "reviewing" || d.status === "closed") {
           const comments = await getComments(d.id);
           if (comments[user!.nickname]) {
@@ -64,6 +72,8 @@ export default function HomePage() {
           persuaded[d.id] = Object.values(comments).filter(
             (c) => c.role === "participant" && c.persuaded === true
           ).length;
+          // 인사이트 수도 실시간 집계
+          d.stats = { ...d.stats, commentCount: Object.keys(comments).length };
         }
       }
       setVotedDebates(voted);
