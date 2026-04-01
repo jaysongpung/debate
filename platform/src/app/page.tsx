@@ -36,7 +36,7 @@ export default function HomePage() {
         ...d,
         status: getDebateStatus(d.startTime, now()),
       }));
-      const visible = withStatus.filter((d) => d.status !== "pending");
+      const visible = withStatus.filter((d) => d.status !== "pending" && d.id !== "sandbox");
       setDebates(visible.reverse());
 
       const voted: Record<string, string> = {};

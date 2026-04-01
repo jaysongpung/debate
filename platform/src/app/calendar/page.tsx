@@ -44,10 +44,12 @@ export default function CalendarPage() {
     if (!user) return;
     async function load() {
       const allDebates = await getDebates();
-      const withStatus = allDebates.map((d) => ({
-        ...d,
-        status: getDebateStatus(d.startTime, now()),
-      }));
+      const withStatus = allDebates
+        .filter((d) => d.id !== "sandbox")
+        .map((d) => ({
+          ...d,
+          status: getDebateStatus(d.startTime, now()),
+        }));
       const pMap: Record<string, number> = {};
       for (const d of withStatus) {
         if (d.status !== "pending") {

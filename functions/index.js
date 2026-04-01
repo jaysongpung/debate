@@ -21,6 +21,9 @@ exports.updateDebateStatus = onSchedule(
     const snapshot = await db.collection("debates").get();
 
     for (const doc of snapshot.docs) {
+      // sandbox는 항상 active 유지
+      if (doc.id === "sandbox") continue;
+
       const data = doc.data();
       const startMs = data.startTime.toMillis();
       const currentStatus = data.status;
