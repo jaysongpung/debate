@@ -174,13 +174,32 @@ export default function CommentPage() {
                 <span className="ml-2">({analysis.length}/500)</span>
               </p>
             </div>
+            <details className="text-sm">
+              <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
+                작성 가이드
+              </summary>
+              <div className="mt-3 space-y-4 select-none border rounded-lg p-4 bg-muted/30">
+                <div>
+                  <p className="font-semibold text-destructive mb-1">NOT GOOD : 현상을 나열하기만 하고 단순 감상, 결과만 적는 수준</p>
+                  <p className="text-muted-foreground">글자 크기가 커서 읽기 편했다.</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-yellow-600 mb-1">NOT BAD : 인터페이스 변화와 행동 변화를 연결</p>
+                  <p className="text-muted-foreground">나도 모르게 상단에 있는 글에 더 긴 반박을 하게 되었다. 상단 배치가 행동의 우선순위를 결정한 것 같다.</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-green-600 mb-1">BEST : 인터페이스 변화와 행동 변화를 보편적 디자인 원리로 연결 및 원인에 대한 구조적 분석</p>
+                  <p className="text-muted-foreground">채팅형 UI의 특성상, 사용자들은 주장과 논거를 체계적으로 전개하기보다는 가볍게 의견을 던지는 경향이 강했다. 채팅 인터페이스는 우리 일상에서 많이 쓰이는 형식이고 토론보다는 사담에 많이 이용하므로 익숙한 형태로 발화하기 때문이다. 인터페이스 형태가 어떤 메세지를 던질지 결정하게 된다는 것을 알았다.</p>
+                </div>
+              </div>
+            </details>
             <Textarea
               value={analysis}
               onChange={(e) => {
                 if (e.target.value.length <= 500)
                   setAnalysis(e.target.value);
               }}
-              rows={20}
+              style={{ height: "300px" }}
               placeholder="분석 내용을 작성하세요"
               required
             />

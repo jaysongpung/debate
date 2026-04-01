@@ -462,6 +462,15 @@
     try {
       await loadFirebase();
 
+      // 등록된 학생인지 확인
+      if (_nickname) {
+        var userDoc = await _db.collection("users").doc(_nickname).get();
+        if (!userDoc.exists) {
+          console.error("[DebateCore] '" + _nickname + "'은(는) 등록된 학생이 아닙니다.");
+          _nickname = null;
+        }
+      }
+
       var debate = _debateIdParam
         ? await loadDebateById(_debateIdParam)
         : await findDebate();
