@@ -378,7 +378,7 @@ export default function CalendarPage() {
                           : "-"}
                       </TableCell>
                       <TableCell className="text-center">
-                        {debate.status === "closed" ? `${persuadedMap[debate.id] ?? 0}명` : "-"}
+                        {showStats ? `${persuadedMap[debate.id] ?? 0}명` : "-"}
                       </TableCell>
                       <TableCell className="text-center">
                         {showStats ? debate.stats.commentCount : "-"}
