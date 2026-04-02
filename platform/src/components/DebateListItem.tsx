@@ -143,7 +143,7 @@ export default function DebateListItem({
                   <Button
                     size="lg"
                     variant="outline"
-                    className={`${BTN_WIDTH} cursor-pointer`}
+                    className={`${BTN_WIDTH} cursor-pointer bg-yellow-50 border-yellow-500 text-yellow-700 hover:bg-yellow-100`}
                     onClick={(e) => { e.stopPropagation(); onButtonClick?.(); }}
                   >
                     인사이트 작성
