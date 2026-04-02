@@ -151,6 +151,15 @@ export async function getComments(
   return comments;
 }
 
+export async function getPayloadNicknames(
+  debateId: string
+): Promise<Set<string>> {
+  const snapshot = await getDocs(
+    collection(db, "debates", debateId, "payloads")
+  );
+  return new Set(snapshot.docs.map((d) => d.id));
+}
+
 export async function getSessions(
   debateId: string
 ): Promise<Record<string, { totalDuration: number }>> {

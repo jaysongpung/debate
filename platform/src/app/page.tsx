@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useNow } from "@/lib/debug-time";
-import { getDebates, getVotes, getComments, getSessions } from "@/lib/firestore";
+import { getDebates, getVotes, getComments, getSessions, getPayloadNicknames } from "@/lib/firestore";
 import { getDebateStatus } from "@/lib/status";
 import Nav from "@/components/Nav";
 import DebateListItem from "@/components/DebateListItem";
@@ -16,6 +16,7 @@ export default function HomePage() {
   const router = useRouter();
   const [debates, setDebates] = useState<Debate[]>([]);
   const [votedDebates, setVotedDebates] = useState<Record<string, string>>({});
+  const [participatedDebates, setParticipatedDebates] = useState<Set<string>>(new Set());
   const [commentedDebates, setCommentedDebates] = useState<Set<string>>(new Set());
   const [bestInsightsMap, setBestInsightsMap] = useState<Record<string, string[]>>({});
   const [persuadedCountMap, setPersuadedCountMap] = useState<Record<string, number>>({});
@@ -40,6 +41,7 @@ export default function HomePage() {
       setDebates(visible.reverse());
 
       const voted: Record<string, string> = {};
+      const participated = new Set<string>();
       const commented = new Set<string>();
       const bests: Record<string, string[]> = {};
       const persuaded: Record<string, number> = {};
@@ -65,6 +67,12 @@ export default function HomePage() {
           d.stats = { ...d.stats, avgDuration: Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) };
         }
 
+        // 토론 참여 여부: payloads에 데이터가 있는지
+        const payloadNicknames = await getPayloadNicknames(d.id);
+        if (payloadNicknames.has(user!.nickname)) {
+          participated.add(d.id);
+        }
+
         if (d.status === "reviewing" || d.status === "closed") {
           const comments = await getComments(d.id);
           if (comments[user!.nickname]) {
@@ -84,6 +92,7 @@ export default function HomePage() {
         }
       }
       setVotedDebates(voted);
+      setParticipatedDebates(participated);
       setCommentedDebates(commented);
       setBestInsightsMap(bests);
       setPersuadedCountMap(persuaded);
@@ -144,7 +153,7 @@ export default function HomePage() {
                 key={debate.id}
                 debate={debate}
                 currentNickname={user.nickname}
-                hasVoted={!!votedDebates[debate.id]}
+                hasVoted={participatedDebates.has(debate.id)}
                 hasComment={commentedDebates.has(debate.id)}
                 bestInsights={bestInsightsMap[debate.id] ?? []}
                 persuadedCount={persuadedCountMap[debate.id] ?? 0}
