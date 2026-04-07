@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>토론</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="stylesheet" href="style.css?v=19">
+</head>
+<body>
+
+  <!-- 접속 오류 화면 -->
+  <div id="msg-screen" class="fullscreen-msg" hidden>
+    <p id="msg-text" class="msg-text"></p>
+  </div>
+
+  <!-- 앱 전체 컨테이너 -->
+  <div id="app" hidden>
+
+    <!-- Phase 1: 찬반 선택 -->
+    <div id="phase-side" class="phase">
+      <div class="topic-bar">
+        <p class="topic-eyebrow">오늘의 논제</p>
+        <h1 id="topic-title" class="topic-title"></h1>
+      </div>
+      <div class="side-split">
+        <button class="side-btn side-pro" data-side="pro">
+          <span class="side-word">찬성</span>
+        </button>
+        <div class="side-rule"></div>
+        <button class="side-btn side-con" data-side="con">
+          <span class="side-word">반대</span>
+        </button>
+      </div>
+      <p class="side-notice">선택 후 변경할 수 없습니다</p>
+    </div>
+
+    <!-- Phase 2: 입장 확정 (thesis) -->
+    <div id="phase-commit" class="phase" hidden>
+      <div class="commit-container">
+        <span id="commit-badge" class="commit-badge"></span>
+        <p id="commit-topic" class="commit-topic"></p>
+        <h2 class="commit-prompt">선택한 입장을 한 문장으로 적어주세요</h2>
+
+        <div class="commit-field">
+          <p class="field-label">주장의 핵심</p>
+          <textarea id="claim-input" class="thesis-input"
+            maxlength="100"
+            placeholder=""></textarea>
+          <div class="input-footer">
+            <span class="char-count"><span id="claim-char-num">0</span>/100</span>
+          </div>
+        </div>
+
+        <div class="commit-field">
+          <p class="field-label">왜 그렇게 생각하나요?</p>
+          <p class="field-sub">경험 · 사례 · 논리적 근거 — 무엇이든 좋습니다</p>
+          <textarea id="evidence-input" class="thesis-input evidence-textarea"
+            maxlength="500"
+            placeholder=""></textarea>
+          <div class="input-footer">
+            <span class="char-count"><span id="evidence-char-num">0</span>/500</span>
+            <button id="commit-btn" class="btn-confirm" disabled>입장 확정</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 3: 토론 (카드 1장씩) -->
+    <div id="phase-debate" class="phase" hidden>
+
+      <!-- 상단 바: 내 별명/입장 + 진행 + 반박 카운트 -->
+      <div class="debate-topbar">
+        <div id="my-badge" class="my-badge"></div>
+        <div class="topbar-right">
+          <span id="rebuttal-count" class="rebuttal-count"></span>
+          <span id="card-progress" class="card-progress"></span>
+        </div>
+      </div>
+      <!-- 논제 바: 탭하면 펼쳐짐 -->
+      <div id="topic-bar-debate" class="topic-bar-debate">
+        <span id="topic-bar-text" class="topic-bar-text"></span>
+      </div>
+
+      <!-- 카드 영역: flex:1, 스크롤 가능 -->
+      <div id="card-zone" class="card-zone">
+        <div id="debate-card" class="debate-card">
+          <p id="card-framing" class="card-framing"></p>
+          <p id="card-body" class="card-body"></p>
+          <p id="card-from" class="card-from"></p>
+        </div>
+      </div>
+
+      <!-- 반박 입력 영역 (기본 hidden) -->
+      <div id="reply-zone" class="reply-zone" hidden>
+        <textarea id="reply-input" class="reply-input"
+          maxlength="200"
+          placeholder="반박 (200자 이내)"></textarea>
+        <div class="reply-row">
+          <button id="reply-cancel" class="btn-ghost">취소</button>
+          <button id="reply-send" class="btn-confirm">전송</button>
+        </div>
+      </div>
+
+      <!-- 하단 액션 영역 -->
+      <div id="card-actions" class="debate-actions">
+        <!-- 반박: 선명하게 메인 액션 -->
+        <button id="btn-reply" class="btn-rebut-main">반박하기</button>
+        <!-- 네비게이션 행: 화살표 가운데 + 제출 오른쪽 -->
+        <div class="nav-row">
+          <div class="nav-left-space"></div>
+          <div class="nav-arrows">
+            <button id="btn-prev" class="btn-nav">←</button>
+            <button id="btn-next" class="btn-nav">→</button>
+          </div>
+          <div class="nav-right">
+            <button id="btn-submit" class="btn-submit-inline" hidden>최종 제출 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 내 thesis 고정 바 (commitment anchor) -->
+      <div id="my-thesis-bar" class="my-thesis-bar" hidden>
+        <span id="my-thesis-side-badge" class="thesis-bar-badge"></span>
+        <span id="my-thesis-preview" class="thesis-bar-text"></span>
+      </div>
+
+    </div>
+
+    <!-- Phase 4: 결과 -->
+    <div id="phase-results" class="phase" hidden>
+
+      <!-- 찬반 비율: 최상단 컬러 바 + 라벨 -->
+      <div id="vote-stripe" class="vote-stripe"></div>
+      <div id="vote-labels" class="vote-labels"></div>
+
+      <div class="results-scroll">
+        <div class="results-container">
+
+          <!-- 내 입장: 논거 추가 가능 -->
+          <div id="my-position-section"></div>
+
+          <!-- 채팅 형태 논쟁 목록 -->
+          <div id="posts-chat" class="posts-chat"></div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JS 오류 캐처 -->
+  <script>
+    window.onerror = function(msg, src, line) {
+      document.body.innerHTML = '<div style="padding:24px;font-family:monospace;color:red;white-space:pre-wrap"><b>JS 오류:</b>\n' + msg + '\n' + src + ':' + line + '</div>';
+    };
+  </script>
+
+  <!-- demo 모드: beforeunload / visibilitychange 차단 -->
+  <script>
+    (function () {
+      if (new URLSearchParams(location.search).get("demo") !== "true") return;
+      var _w = window.addEventListener.bind(window);
+      var _d = document.addEventListener.bind(document);
+      window.addEventListener = function (t, l, o) { if (t === "beforeunload") return; return _w(t, l, o); };
+      document.addEventListener = function (t, l, o) { if (t === "visibilitychange") return; return _d(t, l, o); };
+    })();
+  </script>
+  <script src="https://debate-md2-2603.web.app/debate-core.js" data-architect-id="isubin"></script>
+  <script src="app.js?v=19"></script>
+</body>
+</html>

@@ -54,7 +54,9 @@ export default function CalendarPage() {
       for (const d of withStatus) {
         if (d.status !== "pending") {
           const votes = await getVotes(d.id);
-          const voteEntries = Object.values(votes);
+          const voteEntries = Object.entries(votes)
+            .filter(([nickname]) => nickname !== "gregory")
+            .map(([, v]) => v);
           d.stats = {
             ...d.stats,
             proCount: voteEntries.filter((v) => v.side === "pro").length,
@@ -62,17 +64,24 @@ export default function CalendarPage() {
           };
 
           const sessions = await getSessions(d.id);
-          const durations = Object.values(sessions).map((s) => s.totalDuration).filter((t) => t > 0);
+          const durations = Object.entries(sessions)
+            .filter(([nickname]) => nickname !== "gregory")
+            .map(([, s]) => s.totalDuration)
+            .filter((t) => t > 0);
           if (durations.length > 0) {
             d.stats = { ...d.stats, avgDuration: Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) };
           }
         }
         if (d.status === "reviewing" || d.status === "closed") {
           const comments = await getComments(d.id);
-          d.stats = { ...d.stats, commentCount: Object.keys(comments).length };
-          pMap[d.id] = Object.values(comments).filter(
-            (c) => c.role === "participant" && c.persuaded === true
-          ).length;
+          d.stats = {
+            ...d.stats,
+            commentCount: Object.keys(comments).filter((n) => n !== "gregory").length,
+          };
+          pMap[d.id] = Object.entries(comments)
+            .filter(([nickname]) => nickname !== "gregory")
+            .filter(([, c]) => c.role === "participant" && c.persuaded === true)
+            .length;
         }
       }
       setDebates(withStatus);

@@ -52,17 +52,22 @@ export default function HomePage() {
           voted[d.id] = votes[user!.nickname].side;
         }
 
-        // 투표 데이터에서 실시간 찬/반 집계
-        const voteEntries = Object.values(votes);
+        // 투표 데이터에서 실시간 찬/반 집계 (gregory 제외)
+        const voteEntries = Object.entries(votes)
+          .filter(([nickname]) => nickname !== "gregory")
+          .map(([, v]) => v);
         const proCount = voteEntries.filter((v) => v.side === "pro").length;
         const conCount = voteEntries.filter((v) => v.side === "con").length;
         if (proCount > 0 || conCount > 0) {
           d.stats = { ...d.stats, proCount, conCount };
         }
 
-        // 세션 데이터에서 평균 체류시간 집계
+        // 세션 데이터에서 평균 체류시간 집계 (gregory 제외)
         const sessions = await getSessions(d.id);
-        const durations = Object.values(sessions).map((s) => s.totalDuration).filter((t) => t > 0);
+        const durations = Object.entries(sessions)
+          .filter(([nickname]) => nickname !== "gregory")
+          .map(([, s]) => s.totalDuration)
+          .filter((t) => t > 0);
         if (durations.length > 0) {
           d.stats = { ...d.stats, avgDuration: Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) };
         }
@@ -84,11 +89,15 @@ export default function HomePage() {
           if (bestNicknames.length > 0) {
             bests[d.id] = bestNicknames;
           }
-          persuaded[d.id] = Object.values(comments).filter(
-            (c) => c.role === "participant" && c.persuaded === true
-          ).length;
-          // 인사이트 수도 실시간 집계
-          d.stats = { ...d.stats, commentCount: Object.keys(comments).length };
+          persuaded[d.id] = Object.entries(comments)
+            .filter(([nickname]) => nickname !== "gregory")
+            .filter(([, c]) => c.role === "participant" && c.persuaded === true)
+            .length;
+          // 인사이트 수도 실시간 집계 (gregory 제외)
+          d.stats = {
+            ...d.stats,
+            commentCount: Object.keys(comments).filter((n) => n !== "gregory").length,
+          };
         }
       }
       setVotedDebates(voted);
